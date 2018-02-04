@@ -12,7 +12,7 @@
 
 ### M1
 
-* Pass in a list of URL to index
+* Pass in a list of URLs to index
 * For each URL, start an indexing pipeline
   * Grab data:
     * Name
