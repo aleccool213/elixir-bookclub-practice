@@ -1,3 +1,4 @@
 {
-  "elixir.projectPath": "./linkchecker"
+  "elixir.projectPath": "./linkchecker",
+  "editor.formatOnSave": true
 }

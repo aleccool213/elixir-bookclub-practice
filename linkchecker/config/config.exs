@@ -2,6 +2,29 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
+config :linkchecker, Repo,
+  adapter: Ecto.Adapters.Postgres,
+  database: "linkchecker",
+  username: "alecbrunelle",
+  password: "",
+  hostname: "localhost",
+  port: "5432"
+
+# TODO:
+# config :linkchecker, MongoRepo,
+#   # adapter: Ecto.Adapters.Postgres,
+#   # database: "linkchecker",
+#   # username: "alecbrunelle",
+#   # password: "",
+#   # hostname: "localhost",
+#   # port: "5432"
+
+config :linkchecker,
+  ecto_repos: [
+    Repo,
+    MongoRepo
+  ]
+
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
 # file won't be loaded nor affect the parent project. For this reason,

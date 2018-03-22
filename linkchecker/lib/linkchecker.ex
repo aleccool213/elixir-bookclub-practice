@@ -8,28 +8,38 @@ defmodule Linkchecker do
 
   ## Examples
 
-      iex> Linkchecker.start('./test/test_data/test_links.txt')
+      iex> Linkchecker.start()
 
   """
 
-  def start(path) do
+  def start() do
+    # start three workers and store pids
+    pids = [
+      LinkCheckWorker.start_link(:pid1),
+      LinkCheckWorker.start_link(:pid2),
+      LinkCheckWorker.start_link(:pid3)
+    ]
+    get_urls('./test/test_data/test_links.txt', pids)
+  end
+
+  def get_urls(path, pids) do
+    # Eg. Website |> Repo.all |> Enum.map(fn(x) -> x.url end)
     File.stream!(path)
-    |> Stream.map(&get(&1))
+    |> Stream.map(&choose_worker_and_do_work(&1, pids))
     |> Stream.run()
   end
 
-  def get(url) do
-    url_without_newline = String.replace(url, ~r/\r|\n/, "")
-
-    case HTTPoison.get(url_without_newline) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: _}} ->
-        IO.puts("Got 200!")
-
-      {:ok, %HTTPoison.Response{status_code: status_code}} ->
-        IO.puts("Got #{status_code}")
-
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        IO.inspect(reason)
+  def choose_worker_and_do_work(url, pids) do
+    worker = case Enum.take_random(pids, 1) do
+      [ok: worker] ->
+        IO.puts("Got a worker!")
+        worker
+      [error: error]  ->
+        IO.inspect error
     end
+    LinkCheckWorker.get(worker, url)
+
+    # TODO: write results back to mongodb
+    {:ok, 1}
   end
 end

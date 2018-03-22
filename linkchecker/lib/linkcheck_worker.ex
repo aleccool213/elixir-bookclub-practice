@@ -1,23 +1,43 @@
 defmodule LinkCheckWorker do
   use GenServer
 
-  def start_link() do
-    # runs in the caller context 🐌Alice
-    GenServer.start_link(__MODULE__, [])
+  # Client API
+  def start_link(name) do
+    # runs in the caller context 
+    GenServer.start_link(__MODULE__, [], name: name)
   end
 
-  def init(_) do
-    # runs in the server context 🐨Bob
-    {:ok, 1}
+  def get(pid, url) do
+    url_without_newline = String.replace(url, ~r/\r|\n/, "")
+
+    GenServer.cast(pid, {:url, url_without_newline})
   end
+
+  # Server API
 
   def handle_call(:get_data, _, state) do
-    # runs in the server context 🐨Bob
     {:reply, state, state}
   end
 
-  def handle_cast(:increment, state) do
-    # runs in the server context 🐨Bob
-    {:noreply, state + 1}
+  def init(_) do
+    {:ok, 1}
+  end
+
+  def handle_cast({:url, url}, state) do
+    case HTTPoison.get(url) do
+      {:ok, %HTTPoison.Response{status_code: 200, body: _}} ->
+        IO.puts("Got 200!")
+
+      {:ok, %HTTPoison.Response{status_code: status_code}} ->
+        IO.puts("Got #{status_code}")
+
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        IO.inspect(reason)
+
+      _ -> 
+        IO.inspect("got weird response!")
+    end
+
+    {:noreply, state}
   end
 end
